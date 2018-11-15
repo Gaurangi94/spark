@@ -150,6 +150,15 @@ package object config {
   private[spark] val SHUFFLE_SERVICE_ENABLED =
     ConfigBuilder("spark.shuffle.service.enabled").booleanConf.createWithDefault(false)
 
+  private[spark] val EXTERNAL_SHUFFLE_ENABLED =
+    ConfigBuilder("spark.shuffle.external.enabled")
+    .doc("Whether or not intermediate shuffle data is external to executors. This is just an " +
+      "indicator that toggles whether map tasks need to be rerun if executors fail after map " +
+      "completion. Note that this is implied by spark.shuffle.service.enabled, which actually " +
+      "enables the Spark shuffle service.")
+    .booleanConf
+    .createWithDefault(false)
+
   private[spark] val SHUFFLE_SERVICE_PORT =
     ConfigBuilder("spark.shuffle.service.port").intConf.createWithDefault(7337)
 
