@@ -399,7 +399,7 @@ class SparkContext(config: SparkConf) extends Logging {
       if (isEventLogEnabled) {
         val unresolvedDir = conf.get("spark.eventLog.dir", EventLoggingListener.DEFAULT_LOG_DIR)
           .stripSuffix("/")
-        Some(Utils.resolveURI(unresolvedDir))
+        Some(new URI(unresolvedDir))
       } else {
         None
       }
