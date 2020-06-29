@@ -331,6 +331,7 @@ private[history] class FsHistoryProvider(conf: SparkConf, clock: Clock)
     val ui = SparkUI.create(None, new AppStatusStore(kvstore), conf, secManager, app.info.name,
       HistoryServer.getAttemptURI(appId, attempt.info.attemptId),
       attempt.info.startTime.getTime(),
+      app.info.driverHost,
       attempt.info.appSparkVersion)
     loadPlugins().foreach(_.setupUI(ui))
 
@@ -659,6 +660,7 @@ private[history] class FsHistoryProvider(conf: SparkConf, clock: Clock)
       enableOptimizations: Boolean): Unit = {
     val eventsFilter: ReplayEventsFilter = { eventString =>
       eventString.startsWith(APPL_START_EVENT_PREFIX) ||
+        eventString.startsWith(APPL_LISTENER_BLOCK_EVENT_PREFIX) ||
         eventString.startsWith(APPL_END_EVENT_PREFIX) ||
         eventString.startsWith(LOG_START_EVENT_PREFIX) ||
         eventString.startsWith(ENV_UPDATE_EVENT_PREFIX)
@@ -1013,6 +1015,8 @@ private[history] class FsHistoryProvider(conf: SparkConf, clock: Clock)
 private[history] object FsHistoryProvider {
   private val SPARK_HISTORY_FS_NUM_REPLAY_THREADS = "spark.history.fs.numReplayThreads"
 
+  private val APPL_LISTENER_BLOCK_EVENT_PREFIX = "{\"Event\":\"SparkListenerBlockManagerAdded\""
+
   private val APPL_START_EVENT_PREFIX = "{\"Event\":\"SparkListenerApplicationStart\""
 
   private val APPL_END_EVENT_PREFIX = "{\"Event\":\"SparkListenerApplicationEnd\""
@@ -1103,6 +1107,10 @@ private[history] class AppListingListener(
     attempt.completed = true
   }
 
+  override def onBlockManagerAdded(event: SparkListenerBlockManagerAdded): Unit = {
+    app.driverHost = event.blockManagerId.host
+  }
+
   override def onEnvironmentUpdate(event: SparkListenerEnvironmentUpdate): Unit = {
     // Only parse the first env update, since any future changes don't have any effect on
     // the ACLs set for the UI.
@@ -1150,10 +1158,11 @@ private[history] class AppListingListener(
     var maxCores: Option[Int] = None
     var coresPerExecutor: Option[Int] = None
     var memoryPerExecutorMB: Option[Int] = None
+    var driverHost: String = null
 
     def toView(): ApplicationInfoWrapper = {
       val apiInfo = ApplicationInfo(id, name, coresGranted, maxCores, coresPerExecutor,
-        memoryPerExecutorMB, Nil)
+        memoryPerExecutorMB, Nil, driverHost)
       new ApplicationInfoWrapper(apiInfo, List(attempt.toView()))
     }
 

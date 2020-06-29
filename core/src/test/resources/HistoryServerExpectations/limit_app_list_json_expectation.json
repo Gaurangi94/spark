@@ -8,11 +8,12 @@
     "duration" : 472819,
     "sparkUser" : "attilapiros",
     "completed" : true,
-    "appSparkVersion" : "2.3.0-SNAPSHOT",
-    "lastUpdatedEpoch" : 0,
-    "startTimeEpoch" : 1516300235119,
-    "endTimeEpoch" : 1516300707938
-  } ]
+    "appSparkVersion" : "3.0.0-SNAPSHOT",
+    "startTimeEpoch" : 1562101337180,
+    "endTimeEpoch" : 1562101355974,
+    "lastUpdatedEpoch" : 0
+  } ],
+  "driverHost" : "tomg-test"
 }, {
   "id" : "app-20180109111548-0000",
   "name" : "Spark shell",
@@ -23,11 +24,12 @@
     "duration" : 535234,
     "sparkUser" : "attilapiros",
     "completed" : true,
-    "appSparkVersion" : "2.3.0-SNAPSHOT",
-    "lastUpdatedEpoch" : 0,
-    "startTimeEpoch" : 1515492942372,
-    "endTimeEpoch" : 1515493477606
-  } ]
+    "appSparkVersion" : "2.1.0-SNAPSHOT",
+    "endTimeEpoch" : 1479252138874,
+    "startTimeEpoch" : 1479252037079,
+    "lastUpdatedEpoch" : 0
+  } ],
+  "driverHost" : "test-3.vpc.company.com"
 }, {
   "id" : "app-20161116163331-0000",
   "name" : "Spark shell",
@@ -38,9 +40,10 @@
     "duration" : 10671,
     "sparkUser" : "jose",
     "completed" : true,
-    "appSparkVersion" : "2.1.0-SNAPSHOT",
-    "lastUpdatedEpoch" : 0,
-    "startTimeEpoch" : 1479335609916,
-    "endTimeEpoch" : 1479335620587
-  } ]
+    "appSparkVersion" : "2.3.0-SNAPSHOT",
+    "startTimeEpoch" : 1516300235119,
+    "endTimeEpoch" : 1516300707938,
+    "lastUpdatedEpoch" : 0
+  } ],
+  "driverHost" : "apiros-2.gce.test.com"
 } ]
