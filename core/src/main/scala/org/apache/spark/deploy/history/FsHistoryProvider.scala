@@ -251,22 +251,6 @@ private[history] class FsHistoryProvider(conf: SparkConf, clock: Clock)
   private def startPolling(): Unit = {
     diskManager.foreach(_.initialize())
 
-    // Validate the log directory.
-    val path = new Path(logDir)
-    try {
-      if (!fs.getFileStatus(path).isDirectory) {
-        throw new IllegalArgumentException(
-          "Logging directory specified is not a directory: %s".format(logDir))
-      }
-    } catch {
-      case f: FileNotFoundException =>
-        var msg = s"Log directory specified does not exist: $logDir"
-        if (logDir == DEFAULT_LOG_DIR) {
-          msg += " Did you configure the correct one through spark.history.fs.logDirectory?"
-        }
-        throw new FileNotFoundException(msg).initCause(f)
-    }
-
     // Disable the background thread during tests.
     if (!conf.contains("spark.testing")) {
       // A task that periodically checks for event log updates on disk.
@@ -429,7 +413,7 @@ private[history] class FsHistoryProvider(conf: SparkConf, clock: Clock)
       val newLastScanTime = clock.getTimeMillis()
       logDebug(s"Scanning $logDir with lastScanTime==$lastScanTime")
 
-      val updated = Option(fs.listStatus(new Path(logDir))).map(_.toSeq).getOrElse(Nil)
+      val updated = Option(fs.globStatus(new Path(logDir + "/*"))).map(_.toSeq).getOrElse(Nil)
         .filter { entry =>
           !entry.isDirectory() &&
             // FsHistoryProvider used to generate a hidden file which can't be read.  Accidentally
@@ -591,7 +575,7 @@ private[history] class FsHistoryProvider(conf: SparkConf, clock: Clock)
 
       assert(attempt.isEmpty || attempt.size == 1)
       val isStale = attempt.headOption.exists { a =>
-        if (a.logPath != new Path(logPath).getName()) {
+        if (a.logPath != logPath) {
           // If the log file name does not match, then probably the old log file was from an
           // in progress application. Just return that the app should be left alone.
           false
@@ -633,11 +617,11 @@ private[history] class FsHistoryProvider(conf: SparkConf, clock: Clock)
      * [[OutputStream]] passed in. Each file is written as a new [[ZipEntry]] with its name being
      * the name of the file being compressed.
      */
-    def zipFileToStream(file: Path, entryName: String, outputStream: ZipOutputStream): Unit = {
+    def zipFileToStream(file: Path, outputStream: ZipOutputStream): Unit = {
       val fs = file.getFileSystem(hadoopConf)
       val inputStream = fs.open(file, 1 * 1024 * 1024) // 1MB Buffer
       try {
-        outputStream.putNextEntry(new ZipEntry(entryName))
+        outputStream.putNextEntry(new ZipEntry(file.getName))
         ByteStreams.copy(inputStream, outputStream)
         outputStream.closeEntry()
       } finally {
@@ -659,7 +643,7 @@ private[history] class FsHistoryProvider(conf: SparkConf, clock: Clock)
         .getOrElse(app.attempts)
         .map(_.logPath)
         .foreach { log =>
-          zipFileToStream(new Path(logDir, log), log, zipStream)
+          zipFileToStream(new Path(log), zipStream)
         }
     } finally {
       zipStream.close()
@@ -820,7 +804,7 @@ private[history] class FsHistoryProvider(conf: SparkConf, clock: Clock)
 
       toDelete.foreach { attempt =>
         logInfo(s"Deleting expired event log for ${attempt.logPath}")
-        val logPath = new Path(logDir, attempt.logPath)
+        val logPath = new Path(attempt.logPath)
         listing.delete(classOf[LogInfo], logPath.toString())
         cleanAppData(app.id, attempt.info.attemptId, logPath.toString())
         deleteLog(logPath)
@@ -968,7 +952,7 @@ private[history] class FsHistoryProvider(conf: SparkConf, clock: Clock)
 
     // At this point the disk data either does not exist or was deleted because it failed to
     // load, so the event log needs to be replayed.
-    val status = fs.getFileStatus(new Path(logDir, attempt.logPath))
+    val status = fs.getFileStatus(new Path(attempt.logPath))
     val isCompressed = EventLoggingListener.codecName(status.getPath()).flatMap { name =>
       Try(CompressionCodec.getShortName(name)).toOption
     }.isDefined
@@ -990,7 +974,7 @@ private[history] class FsHistoryProvider(conf: SparkConf, clock: Clock)
 
   private def createInMemoryStore(attempt: AttemptInfoWrapper): KVStore = {
     val store = new InMemoryStore()
-    val status = fs.getFileStatus(new Path(logDir, attempt.logPath))
+    val status = fs.getFileStatus(new Path(attempt.logPath))
     rebuildAppStore(store, status, attempt.info.lastUpdated.getTime())
     store
   }
@@ -1094,7 +1078,8 @@ private[history] class AppListingListener(
     haltEnabled: Boolean) extends SparkListener {
 
   private val app = new MutableApplicationInfo()
-  private val attempt = new MutableAttemptInfo(log.getPath().getName(), log.getLen())
+  private val attempt = new MutableAttemptInfo(
+    log.getPath().toString, log.getLen)
 
   private var gotEnvUpdate = false
   private var halted = false
