@@ -121,6 +121,8 @@ $(document).ready(function() {
         if (app["attempts"][0]["completed"] == requestedIncomplete) {
           continue; // if we want to show for Incomplete, we skip the completed apps; otherwise skip incomplete ones.
         }
+
+        var driverHost = app["driverHost"]
         var id = app["id"];
         var name = app["name"];
         if (app["attempts"].length > 1) {
@@ -136,7 +138,8 @@ $(document).ready(function() {
             (attempt.hasOwnProperty("attemptId") ? attempt["attemptId"] + "/" : "") + "logs";
           attempt["durationMillisec"] = attempt["duration"];
           attempt["duration"] = formatDuration(attempt["duration"]);
-          var app_clone = {"id" : id, "name" : name, "num" : num, "attempts" : [attempt]};
+
+          var app_clone = {"id" : id, "name" : name, "num" : num, "driverHost": driverHost, "attempts" : [attempt]};
           array.push(app_clone);
         }
       }
@@ -163,6 +166,7 @@ $(document).ready(function() {
           "columns": [
             {name: 'appId', type: "appid-numeric"},
             {name: 'appName'},
+            {name: 'driverHost'},
             {name: attemptIdColumnName},
             {name: startedColumnName},
             {name: completedColumnName},
