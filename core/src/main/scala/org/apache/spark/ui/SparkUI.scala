@@ -44,8 +44,7 @@ private[spark] class SparkUI private (
     var appName: String,
     val basePath: String,
     val startTime: Long,
-    val appSparkVersion: String,
-    val driverHost: String)
+    val appSparkVersion: String)
   extends WebUI(securityManager, securityManager.getSSLOptions("ui"), SparkUI.getUIPort(conf),
     conf, basePath, "SparkUI")
   with Logging
@@ -118,7 +117,6 @@ private[spark] class SparkUI private (
       maxCores = None,
       coresPerExecutor = None,
       memoryPerExecutorMB = None,
-      driverHost = driverHost,
       attempts = Seq(new ApplicationAttemptInfo(
         attemptId = None,
         startTime = new Date(startTime),
@@ -175,11 +173,9 @@ private[spark] object SparkUI {
       appName: String,
       basePath: String,
       startTime: Long,
-      driverHost: String,
       appSparkVersion: String = org.apache.spark.SPARK_VERSION): SparkUI = {
 
-    new SparkUI(store, sc, conf, securityManager, appName, basePath, startTime,
-      appSparkVersion, driverHost)
+    new SparkUI(store, sc, conf, securityManager, appName, basePath, startTime, appSparkVersion)
   }
 
 }

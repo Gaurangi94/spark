@@ -442,7 +442,7 @@ class SparkContext(config: SparkConf) extends Logging {
     _ui =
       if (conf.getBoolean("spark.ui.enabled", true)) {
         Some(SparkUI.create(Some(this), _statusStore, _conf, _env.securityManager, appName, "",
-          startTime, ""))
+          startTime))
       } else {
         // For tests, do not enable the UI
         None

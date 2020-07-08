@@ -9,11 +9,10 @@
     "sparkUser" : "irashid",
     "completed" : true,
     "appSparkVersion" : "",
-    "startTimeEpoch" : 1422981779720,
     "endTimeEpoch" : 1422981788731,
+    "startTimeEpoch" : 1422981779720,
     "lastUpdatedEpoch" : 0
-  } ],
-  "driverHost" : "localhost"
+  } ]
 }, {
   "id" : "local-1422981759269",
   "name" : "Spark shell",
@@ -25,9 +24,8 @@
     "sparkUser" : "irashid",
     "completed" : true,
     "appSparkVersion" : "",
-    "startTimeEpoch" : 1422981758277,
     "endTimeEpoch" : 1422981766912,
+    "startTimeEpoch" : 1422981758277,
     "lastUpdatedEpoch" : 0
-  } ],
-  "driverHost" : "localhost"
+  } ]
 } ]
